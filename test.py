@@ -5,6 +5,7 @@ import zlib
 import bz2
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools
 
 """
 Script for measuring properties of sparse Bloom filters under compression.
@@ -23,8 +24,8 @@ def gen_rand_bloom_bytes(filter_size, num_funcs, num_inserts):
     return bytes(bloom)
 
 if __name__ == "__main__":
-    size_cap = 30000
-    filter_size = 2**17
+    size_cap = 50000
+    filter_size = 2**16
 
     x_vals = []
     y_vals = {1 : {"bz2":[],
@@ -36,9 +37,9 @@ if __name__ == "__main__":
               4 : {"bz2":[],
                    "zlib":[]}}
 
-    sample_size = 6
+    sample_size = 10
 
-    for num_elems in range(0, size_cap, 100):
+    for num_elems in itertools.chain(range(0, 100*25, 50), range(100*25, size_cap, 500)):
         x_vals.append(num_elems)
         print(".", end="", flush=True)
 
@@ -57,17 +58,19 @@ if __name__ == "__main__":
     # left column
     plt.subplot(2,2,1)
 
-    plt.plot(x_vals[:25], y_vals[1]["bz2"][:25], "r-", label="k=1, bz2")
-    plt.plot(x_vals[:25], y_vals[1]["zlib"][:25], "r--", label="k=1, zlib")
+    plt.plot(x_vals[:25], y_vals[1]["bz2"][:25], "r-", label="k=1, bzip2")
+    plt.plot(x_vals[:25], y_vals[1]["zlib"][:25], "r--", label="k=1, gzip")
 
-    plt.plot(x_vals[:25], y_vals[2]["bz2"][:25], "y-", label="k=2, bz2")
-    plt.plot(x_vals[:25], y_vals[2]["zlib"][:25], "y--", label="k=2, zlib")
+    plt.plot(x_vals[:25], y_vals[2]["bz2"][:25], "y-", label="k=2, bzip2")
+    plt.plot(x_vals[:25], y_vals[2]["zlib"][:25], "y--", label="k=2, gzip")
 
-    plt.plot(x_vals[:25], y_vals[3]["bz2"][:25], "g-", label="k=3, bz2")
-    plt.plot(x_vals[:25], y_vals[3]["zlib"][:25], "g--", label="k=3, zlib")
+    plt.plot(x_vals[:25], y_vals[3]["bz2"][:25], "g-", label="k=3, bzip2")
+    plt.plot(x_vals[:25], y_vals[3]["zlib"][:25], "g--", label="k=3, gzip")
 
-    plt.plot(x_vals[:25], y_vals[4]["bz2"][:25], "b-", label="k=4, bz2")
-    plt.plot(x_vals[:25], y_vals[4]["zlib"][:25], "b--", label="k=4, zlib")
+    plt.plot(x_vals[:25], y_vals[4]["bz2"][:25], "b-", label="k=4, bzip2")
+    plt.plot(x_vals[:25], y_vals[4]["zlib"][:25], "b--", label="k=4, gzip")
+
+    #plt.plot([0, x_vals[24]], [(2**16)/8, (2**16)/8], "k-", label="raw")
 
     plt.grid(True)
     plt.legend()
@@ -107,6 +110,8 @@ if __name__ == "__main__":
 
     plt.plot(x_vals, y_vals[4]["bz2"], "b-")
     plt.plot(x_vals, y_vals[4]["zlib"], "b--")
+
+    #plt.plot([0, size_cap], [2**13, 2**13], "k-")
 
     plt.title("Bloom Filter Characteristics (Many Elements)")
     plt.ylabel("Compressed size (in bytes)")
